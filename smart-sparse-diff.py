@@ -78,7 +78,7 @@ def parse_log_by_file(log: str) -> Dict[str, List[List[str]]]:
 
 def smart_filter(a: List[Any],
                  b: List[Any]) -> List[Any]:
-    res = [] # type: List[str]
+    res = [] # type: List[Any]
     # two reasons we'd want to keep a line:
     # it does not appear in the other at all
     # it appears an unequal number of times (think headers)
@@ -152,7 +152,8 @@ def format_one_warning(parts: List[str]) -> str:
     return ":".join(parts)
 
 
-def smart_diff(old_log, new_log):
+def smart_diff(old_log: str, new_log: str
+               ) -> Tuple[List[str], List[str]]:
     old_by_file = parse_log_by_file(old_log)
     new_by_file = parse_log_by_file(new_log)
 
@@ -249,10 +250,34 @@ def smart_diff(old_log, new_log):
     #fn = list(changed_3.keys())[0]
     #ch = changed_3[fn]
 
-    return (only_old, only_new, changed_3)
+    # now lets format data for return
+    # I assume consumers (so far, just pretty-printing) is pretty unconcerned with
+    # getting the messages split up by file name. So let's flatten our dictionaries
+    # note that this doesn't flatten them properly yet - we get a list where each
+    # item represents a file, and each item is a list of warnings, and each warning
+    # is a list of parts.
+    removed_msgs = [only_old[fn][0] for fn in only_old]
+    added_msgs = [only_new[fn][1] for fn in only_new]
+
+    # also, the whole concept of 'changed' - files with changed messages -
+    # is pretty unique to our analysis, so just flatten them out too
+    removed_msgs += [changed_3[fn][0] for fn in changed_3]
+    added_msgs += [changed_3[fn][1] for fn in changed_3]
+
+    # lastly, rejoin on ":", flattening out the lists as we go.
+    removed_warns = [] # type: List[str]
+    for sublist in removed_msgs:
+        for msg in sublist:
+            removed_warns += [format_one_warning(msg)]
+    added_warns = [] # type: List[str]
+    for sublist in added_msgs:
+        for msg in sublist:
+            added_warns += [format_one_warning(msg)]
+
+    return (removed_warns, added_warns)
 
     
-def usage(exec_name):
+def usage(exec_name: str) -> None:
     print("Usage: %s <oldfile> <newfile>" % exec_name)
     print("    attempt a smart diff between sparse logs in oldfile and newfile")
     exit(1)
@@ -275,19 +300,13 @@ if __name__ == '__main__':
         print("Error reading new log file %s" % new_file)
         exit(1)
 
-    (only_old, only_new, changed) = smart_diff(old_log, new_log)
-
-    removed = [only_old[o][0] for o in only_old] + [changed[c][0] for c in changed]
-    added = [only_new[n][1] for n in only_new] + [changed[c][1] for c in changed]
+    (removed, added) = smart_diff(old_log, new_log)
 
     lines = [] # type: List[str]
-    for sublist in removed:
-        for w in sublist:
-            lines += ['-' + format_one_warning(w)]
-    for sublist in added:
-        for w in sublist:
-            lines += ['+' + format_one_warning(w)]
+    lines += ['-' + w for w in removed]
+    lines += ['+' + w for w in added]
 
+    # sort by message, not including +/-
     lines.sort(key=lambda x: x[1:])
     for l in lines:
         print(l)
