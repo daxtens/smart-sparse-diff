@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 verbose = False
 def vprint(*args, **kwargs):
@@ -76,8 +76,8 @@ def parse_log_by_file(log: str) -> Dict[str, List[List[str]]]:
 
     return concat_lines_by_file
 
-def smart_filter(a: List[str],
-                 b: List[str]) -> List[str]:
+def smart_filter(a: List[Any],
+                 b: List[Any]) -> List[Any]:
     res = [] # type: List[str]
     # two reasons we'd want to keep a line:
     # it does not appear in the other at all
@@ -280,7 +280,7 @@ if __name__ == '__main__':
     removed = [only_old[o][0] for o in only_old] + [changed[c][0] for c in changed]
     added = [only_new[n][1] for n in only_new] + [changed[c][1] for c in changed]
 
-    lines = []
+    lines = [] # type: List[str]
     for sublist in removed:
         for w in sublist:
             lines += ['-' + format_one_warning(w)]
@@ -289,5 +289,6 @@ if __name__ == '__main__':
             lines += ['+' + format_one_warning(w)]
 
     lines.sort(key=lambda x: x[1:])
-    [print(l) for l in lines]
+    for l in lines:
+        print(l)
 
