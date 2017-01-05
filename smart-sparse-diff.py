@@ -34,8 +34,9 @@ def concat_multi_line_warnings(split_lines: List[List[str]]) -> List[List[str]]:
     for parts in split_lines:
 
         if len(parts) < 4:
-            # this doesn't have enough parts to be a 'real' line. warn and proceed.
-            #print('Found odd line "%s", ignoring.' % line)
+            # this doesn't have enough parts to be a 'real' line.
+            # store it, don't attempt to process it now
+            # hopefully it will be removed in deduplication
             lines += [parts]
             continue
 

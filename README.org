@@ -1,4 +1,4 @@
-[sparse][0] is a useful tool for static analysis of the Linux kernel.
+(sparse)[0] is a useful tool for static analysis of the Linux kernel.
 
 However, it tends to generate a lot of output. A run on a reasonably
 small powerpc defconfig gives over 3000 lines of output. This - and
