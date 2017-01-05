@@ -1,0 +1,31 @@
+[sparse][0] is a useful tool for static analysis of the Linux kernel.
+
+However, it tends to generate a lot of output. A run on a reasonably
+small powerpc defconfig gives over 3000 lines of output. This - and
+the fact that running with ~make -jNN~ will give you output in
+unpredictable order - makes running a ~diff~ over the results quite
+tricky. Furthermore, a code change that moves code around will
+lead to sparse warnings changing line numbers, meaning ~diff~ will
+double-count them.
+
+This python script aims to make that a bit easier.
+
+Designed specifically with sparse in mind, this script:
+
+ - eliminates exact matches
+
+ - eliminates warnings that are the same except for a change in line
+   number
+
+ - comfortably deals with warnings that are split across multiple lines
+
+   For example:
+   #+BEGIN_EXAMPLE
+drivers/scsi/lpfc/lpfc_scsi.c:5606:30: warning: incorrect type in assignment (different base types)
+drivers/scsi/lpfc/lpfc_scsi.c:5606:30:    expected int [signed] memory_flags
+drivers/scsi/lpfc/lpfc_scsi.c:5606:30:    got restricted gfp_t
+   #+END_EXAMPLE
+
+ - prints the output in the unified diff format we all know and love
+
+[0] https://sparse.wiki.kernel.org/index.php/Main_Page
