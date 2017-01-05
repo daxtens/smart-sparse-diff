@@ -1,4 +1,6 @@
-(sparse)[0] is a useful tool for static analysis of the Linux kernel.
+* Introduction
+
+[sparse][0] is a useful tool for static analysis of the Linux kernel.
 
 However, it tends to generate a lot of output. A run on a reasonably
 small powerpc defconfig gives over 3000 lines of output. This - and
@@ -24,8 +26,61 @@ Designed specifically with sparse in mind, this script:
 drivers/scsi/lpfc/lpfc_scsi.c:5606:30: warning: incorrect type in assignment (different base types)
 drivers/scsi/lpfc/lpfc_scsi.c:5606:30:    expected int [signed] memory_flags
 drivers/scsi/lpfc/lpfc_scsi.c:5606:30:    got restricted gfp_t
-   #+END_EXAMPLE
+#+END_EXAMPLE
 
  - prints the output in the unified diff format we all know and love
 
-[0] https://sparse.wiki.kernel.org/index.php/Main_Page
+* Usage
+
+#+BEGIN_EXAMPLE
+./smart-sparse-diff.py <old log> <new log>
+#+END_EXAMPLE
+
+Currently no flags are accepted. However, if you want more verbose
+output, you can edit the python file and set ~verbose~ to ~True~.
+
+** Example
+#+BEGIN_EXAMPLE
+~/d/smart-sparse-diff> ./smart-sparse-diff.py  pseries_le_defconfig-234.log pseries_le_defconfig-238.log 
+-kernel/cgroup.c:3145:9: warning: context imbalance in 'cgroup_lock_and_drain_offline' - wrong count at exit
++kernel/cgroup/cgroup.c:2598:9: warning: context imbalance in 'cgroup_lock_and_drain_offline' - wrong count at exit
+-kernel/config_data.h:XX:10: warning: trying to concatenate 20558-character string (8191 bytes max)
++kernel/config_data.h:XX:10: warning: trying to concatenate 20575-character string (8191 bytes max)
++kernel/rcu/tree.c:XX:6: warning: symbol 'rcu_dynticks_curr_cpu_in_eqs' was not declared. Should it be static?
++kernel/rcu/tree_trace.c:335:9: warning: incorrect type in argument 1 (different modifiers) expected struct raw_spinlock [usertype] *lock got struct raw_spinlock [noderef] *<noident>
+#+END_EXAMPLE
+
+~XX~ marks where line-insensitive matching has been attempted.
+
+* Limitations & Bugs
+
+** Limitations based on input limitations
+Often you'll find compiler/linker warnings interspersed with sparse
+output. Hopefully they're present in both the old and new files are
+will be removed in the exact line match phase, but if not you may
+either get warnings about them or you may find somewhat odd output.
+
+** Limitations based on sparse limitations
+Sparse also has some trouble with warnings that are interactions
+between C and header files. For example:
+
+#+BEGIN_EXAMPLE
+./arch/powerpc/include/asm/spinlock.h:168:9: warning: context imbalance in 'i8259_irq' - unexpected unlock
+#+END_EXAMPLE
+
+There's no ~i8259_irq~ in ~spinlock.h~: instead there's a file that
+includes that header file and uses something in that file that causes
+a warning. Sparse isn't smart enough to blame the correct file here.
+
+** Other bugs
+There are probably other bugs.
+
+We _should_ pick up cases where the number of occurrences of a warning
+changes, but I haven't tested it properly. This is particularly
+relevant to header file-related warnings.
+
+* Requirements, etc
+
+This uses Python 3, and supports ~mypy~ static typing.
+
+[0]: https://sparse.wiki.kernel.org/index.php/Main_Page
