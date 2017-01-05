@@ -1,6 +1,6 @@
 * Introduction
 
-[sparse][0] is a useful tool for static analysis of the Linux kernel.
+[[https://sparse.wiki.kernel.org/index.php/Main_Page][sparse]] is a useful tool for static analysis of the Linux kernel.
 
 However, it tends to generate a lot of output. A run on a reasonably
 small powerpc defconfig gives over 3000 lines of output. This - and
@@ -82,5 +82,3 @@ relevant to header file-related warnings.
 * Requirements, etc
 
 This uses Python 3, and supports ~mypy~ static typing.
-
-[0]: https://sparse.wiki.kernel.org/index.php/Main_Page
