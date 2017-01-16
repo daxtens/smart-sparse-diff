@@ -119,14 +119,14 @@ def remove_lines_diff_by_only_line_no(old_lines, new_lines):
     for parts in old_lines:
         if len(parts) < 4:
             # this doesn't have enough parts to be a 'real' line. warn and proceed.
-            print('Found odd line "%s" in old file, ignoring.' % line)
+            print('Found odd line "%s" in old file, ignoring.' % ':'.join(parts))
         else:
             safe_old_lines += [parts]
     safe_new_lines = []
     for parts in new_lines:
         if len(parts) < 4:
             # this doesn't have enough parts to be a 'real' line. warn and proceed.
-            print('Found odd line "%s" in new file, ignoring.' % line)
+            print('Found odd line "%s" in new file, ignoring.' % ':'.join(parts))
         else:
             safe_new_lines += [parts]
             
